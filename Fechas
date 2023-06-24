@@ -1,0 +1,17 @@
+(#"Día Incial" as number, #"Mes Inicial" as number, #"Año Incial" as number) =>
+(#"Día Final" as number, #"Mes Final" as number, #"Año Final" as number) => 
+
+let
+    FechaIncial = #date(#"Año Incial",#"Mes Inicial",#"Día Incial"),
+    FechaFinal = #date(#"Año Final",#"Mes Final",#"Día Final"),
+    ListaDeFechas = List.Dates(FechaIncial, Number.From(FechaFinal - FechaIncial)  ,#duration(1,0,0,0)),
+    CT = Table.FromList(ListaDeFechas, Splitter.SplitByNothing(), {"Fecha"}, null, ExtraValues.Error),
+    A = Table.AddColumn(CT, "Año", each Date.Year([Fecha]), Int64.Type),
+    Mnum = Table.AddColumn(A, "Mes Número", each Date.Month([Fecha]), Int64.Type),
+    Mnom = Table.AddColumn(Mnum, "Mes Nombre", each Text.Proper( Date.MonthName([Fecha]) ), type text),
+    T = Table.AddColumn(Mnom, "Trimestre",  each  Date.QuarterOfYear([Fecha]), Int64.Type),
+    DSNum = Table.AddColumn(T, "DS Número", each Date.DayOfWeek([Fecha]), Int64.Type),
+    DSNom = Table.AddColumn(DSNum, "DS Nombre", each Date.DayOfWeekName([Fecha]), type text),
+    FormFech = Table.TransformColumnTypes(DSNom,{{"Fecha", type date}})
+in
+    FormFech
